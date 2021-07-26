@@ -1,14 +1,18 @@
 package api.product.controller
 
 import api.product.service.BasicCrud
+import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
+
+    @ApiOperation("Get all entities")
     @GetMapping
     fun findAll() = basicCrud.findAll()
 
+    @ApiOperation("Get by Id")
     @GetMapping("/{id}")
     fun findById(@PathVariable id: ID): ResponseEntity<T> {
         val entity = basicCrud.findById(id)
@@ -16,6 +20,7 @@ abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
             .body(entity)
     }
 
+    @ApiOperation("Create entity")
     @PostMapping
     fun save(@RequestBody body: T): ResponseEntity<Boolean> {
         val entity = basicCrud.save(body)
@@ -23,6 +28,7 @@ abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
             .body(entity)
     }
 
+    @ApiOperation("Update entity")
     @PutMapping
     fun update(@RequestBody body: T): ResponseEntity<Boolean> {
         val entity = basicCrud.update(body)
@@ -30,6 +36,7 @@ abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
             .body(entity)
     }
 
+    @ApiOperation("Delete entity")
     @DeleteMapping("/{id}")
     fun deleteById(@PathVariable id: ID): ResponseEntity<Boolean> {
         val entity = basicCrud.deleteById(id)
