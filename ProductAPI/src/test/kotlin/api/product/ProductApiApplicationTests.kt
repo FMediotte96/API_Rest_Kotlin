@@ -8,7 +8,6 @@ import org.hamcrest.Matchers
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
@@ -76,12 +75,72 @@ class ProductApiApplicationTests {
         val product = Product(name = "PineApple", price = 50.0)
 
         val result: Boolean = mockMvc.perform(
-            MockMvcRequestBuilders.post(productEndPoint)
-                .content(mapper.writeValueAsBytes(product))
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+            MockMvcRequestBuilders.post(productEndPoint).body(product, mapper)
         ).andExpect(status().isOk).bodyTo(mapper)
 
         assert(result)
     }
 
+    @Test
+    fun saveFail() {
+        val productsFromService = productService.findAll()
+        assert(productsFromService.isNotEmpty()) { "Should not be empty" }
+
+        val product = productsFromService.first()
+
+        val result: Boolean = mockMvc.perform(
+            MockMvcRequestBuilders.post(productEndPoint).body(product, mapper)
+        ).andExpect(status().isOk).bodyTo(mapper)
+
+        assert(!result) { "Should be false" }
+    }
+
+    @Test
+    fun updateSuccessfully() {
+        val productsFromService = productService.findAll()
+        assert(productsFromService.isNotEmpty()) { "Should not be empty" }
+
+        //nos permite copiar el estado de dicho objeto y también nos permite cambiar sus atributos
+        val product = productsFromService.first().copy(price = 44.23)
+
+        val result: Boolean = mockMvc.perform(
+            MockMvcRequestBuilders.put(productEndPoint).body(product, mapper)
+        ).andExpect(status().isOk).bodyTo(mapper)
+
+        assert(result)
+    }
+
+    @Test
+    fun updateFail() {
+        val product = Product(name = UUID.randomUUID().toString(), price = 123.123)
+
+        val result: Boolean = mockMvc.perform(
+            MockMvcRequestBuilders.put(productEndPoint).body(product, mapper)
+        ).andExpect(status().isOk).bodyTo(mapper)
+
+        assert(!result) { "Should be false" }
+    }
+
+    @Test
+    fun deleteById() {
+        val productsFromService = productService.findAll()
+        assert(productsFromService.isNotEmpty()) { "Should not be empty" }
+
+        val product = productsFromService.last()
+        val result: Boolean = mockMvc.perform(
+            MockMvcRequestBuilders.delete("$productEndPoint/${product.name}")
+        ).andExpect(status().isOk).bodyTo(mapper)
+
+        assert(result)
+        assert(!productService.findAll().contains(product))
+    }
+
+    @Test
+    fun deleteByIdFail() {
+        val result: Boolean = mockMvc.perform(
+            MockMvcRequestBuilders.delete("$productEndPoint/${UUID.randomUUID()}")
+        ).andExpect(status().isOk).bodyTo(mapper)
+
+        assert(!result) { "Should be false" }
+    }
 }
