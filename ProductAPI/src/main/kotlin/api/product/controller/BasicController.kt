@@ -23,7 +23,8 @@ abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
 
     @ApiOperation("Create entity")
     @PostMapping
-    fun save(@Valid @RequestBody body: T) = this.basicCrud.save(body)
+    fun save(@Valid @RequestBody body: T) =
+        ResponseEntity.status(HttpStatus.CREATED).body(this.basicCrud.save(body))
 
     @ApiOperation("Update entity")
     @PutMapping

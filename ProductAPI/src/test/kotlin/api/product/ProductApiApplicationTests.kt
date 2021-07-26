@@ -77,11 +77,11 @@ class ProductApiApplicationTests {
     fun d_saveSuccessfully() {
         val product = Product(name = "PineApple", price = 50.0)
 
-        val result: Boolean = mockMvc.perform(
+        val productFromApi: Product = mockMvc.perform(
             MockMvcRequestBuilders.post(productEndPoint).body(product, mapper)
         ).andExpect(status().isCreated).bodyTo(mapper)
 
-        assert(result)
+        assert(productService.findAll().contains(productFromApi))
     }
 
     @Test
@@ -94,17 +94,16 @@ class ProductApiApplicationTests {
     }
 
     @Test
-    fun e_saveFail() {
+    fun e_saveDuplicateEntity() {
         val productsFromService = productService.findAll()
         assert(productsFromService.isNotEmpty()) { "Should not be empty" }
 
         val product = productsFromService.first()
 
-        val result: Boolean = mockMvc.perform(
+        mockMvc.perform(
             MockMvcRequestBuilders.post(productEndPoint).body(product, mapper)
-        ).andExpect(status().isConflict).bodyTo(mapper)
-
-        assert(!result) { "Should be false" }
+        ).andExpect(status().isConflict)
+            .andExpect(jsonPath("$.title", Matchers.`is`("DuplicateKeyException")))
     }
 
     @Test
@@ -115,22 +114,21 @@ class ProductApiApplicationTests {
         //nos permite copiar el estado de dicho objeto y también nos permite cambiar sus atributos
         val product = productsFromService.first().copy(price = 44.23)
 
-        val result: Boolean = mockMvc.perform(
+        val productFromApi: Product = mockMvc.perform(
             MockMvcRequestBuilders.put(productEndPoint).body(product, mapper)
         ).andExpect(status().isOk).bodyTo(mapper)
 
-        assert(result)
+        assertThat(productService.findById(product.name), Matchers.`is`(productFromApi))
     }
 
     @Test
-    fun g_updateFail() {
+    fun g_updateEntityNotFound() {
         val product = Product(name = UUID.randomUUID().toString(), price = 123.123)
 
-        val result: Boolean = mockMvc.perform(
+        mockMvc.perform(
             MockMvcRequestBuilders.put(productEndPoint).body(product, mapper)
-        ).andExpect(status().isConflict).bodyTo(mapper)
-
-        assert(!result) { "Should be false" }
+        ).andExpect(status().isConflict)
+            .andExpect(jsonPath("$.title", Matchers.`is`("EntityNotFoundException")))
     }
 
     @Test
@@ -139,21 +137,19 @@ class ProductApiApplicationTests {
         assert(productsFromService.isNotEmpty()) { "Should not be empty" }
 
         val product = productsFromService.last()
-        val result: Boolean = mockMvc.perform(
+        val productFromApi: Product = mockMvc.perform(
             MockMvcRequestBuilders.delete("$productEndPoint/${product.name}")
         ).andExpect(status().isOk).bodyTo(mapper)
 
-        assert(result)
-        assert(!productService.findAll().contains(product))
+        assert(!productService.findAll().contains(productFromApi))
     }
 
     @Test
-    fun i_deleteByIdFail() {
-        val result: Boolean = mockMvc.perform(
+    fun i_deleteByIdEntityNotFound() {
+        mockMvc.perform(
             MockMvcRequestBuilders.delete("$productEndPoint/${UUID.randomUUID()}")
-        ).andExpect(status().isNoContent).bodyTo(mapper)
-
-        assert(!result) { "Should be false" }
+        ).andExpect(status().isConflict)
+            .andExpect(jsonPath("$.title", Matchers.`is`("EntityNotFoundException")))
     }
 
 }
