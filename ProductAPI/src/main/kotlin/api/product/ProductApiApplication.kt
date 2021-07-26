@@ -47,3 +47,10 @@ data class Product(val name: String, var price: Double? = 55.5) {
     }
 
 }
+
+/*
+Inyección de dependencia por constructor no hace falta anotar con Autowired
+laneinit indica que la variable va a ser inicializada más tarde y debe ser utilizada
+a nivel de atributo
+se recomienda utilizar la inyección de dependencia por constructor
+ */
