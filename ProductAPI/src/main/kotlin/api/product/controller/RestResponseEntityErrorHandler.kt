@@ -1,5 +1,7 @@
 package api.product.controller
 
+import api.product.dto.ApiResponse
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -8,7 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
-import java.io.FileNotFoundException
+import java.lang.Exception
+import javax.persistence.EntityNotFoundException
 
 @RestControllerAdvice
 class RestResponseEntityErrorHandler : ResponseEntityExceptionHandler() {
@@ -25,8 +28,12 @@ class RestResponseEntityErrorHandler : ResponseEntityExceptionHandler() {
         return ResponseEntity.status(status).headers(headers).body(result)
     }
 
-    @ExceptionHandler(FileNotFoundException::class)
-    fun test(): ResponseEntity<String> {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ups")
+    @ExceptionHandler(DuplicateKeyException::class, EntityNotFoundException::class)
+    fun handlerJpa(ex: Exception): ResponseEntity<ApiResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse(
+            title = ex::class.simpleName.toString(),
+            message = ex.localizedMessage
+        ))
     }
+
 }

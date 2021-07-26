@@ -23,25 +23,13 @@ abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
 
     @ApiOperation("Create entity")
     @PostMapping
-    fun save(@Valid @RequestBody body: T): ResponseEntity<Boolean> {
-        val entity = basicCrud.save(body)
-        return ResponseEntity.status(if (entity) HttpStatus.CREATED else HttpStatus.CONFLICT)
-            .body(entity)
-    }
+    fun save(@Valid @RequestBody body: T) = this.basicCrud.save(body)
 
     @ApiOperation("Update entity")
     @PutMapping
-    fun update(@RequestBody body: T): ResponseEntity<Boolean> {
-        val entity = basicCrud.update(body)
-        return ResponseEntity.status(if (entity) HttpStatus.OK else HttpStatus.CONFLICT)
-            .body(entity)
-    }
+    fun update(@RequestBody body: T) = this.basicCrud.update(body)
 
     @ApiOperation("Delete entity")
     @DeleteMapping("/{id}")
-    fun deleteById(@PathVariable id: ID): ResponseEntity<Boolean> {
-        val entity = basicCrud.deleteById(id)
-        return ResponseEntity.status(if (entity) HttpStatus.OK else HttpStatus.NO_CONTENT)
-            .body(entity)
-    }
+    fun deleteById(@PathVariable id: ID) = this.basicCrud.deleteById(id)
 }
