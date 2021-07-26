@@ -1,5 +1,5 @@
 # API Rest Kotlin
-Desarrollo de una API Rest programada con Springboot y Kotlin.
+Desarrollo de una API Rest con Springboot y Kotlin.
 
 Documentada con Swagger
 
