@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import javax.validation.Valid
 
 abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
 
@@ -22,7 +23,7 @@ abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
 
     @ApiOperation("Create entity")
     @PostMapping
-    fun save(@RequestBody body: T): ResponseEntity<Boolean> {
+    fun save(@Valid @RequestBody body: T): ResponseEntity<Boolean> {
         val entity = basicCrud.save(body)
         return ResponseEntity.status(if (entity) HttpStatus.CREATED else HttpStatus.CONFLICT)
             .body(entity)
