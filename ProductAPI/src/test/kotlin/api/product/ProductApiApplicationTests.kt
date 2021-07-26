@@ -5,7 +5,9 @@ import api.product.service.ProductService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
+import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.web.servlet.MockMvc
@@ -20,6 +22,7 @@ import java.util.*
 
 @SpringBootTest
 //@AutoConfigureMockMvc
+@TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class ProductApiApplicationTests {
 
     @Autowired
@@ -40,7 +43,7 @@ class ProductApiApplicationTests {
     private val productEndPoint = "/api/v1/product"
 
     @Test
-    fun findAll() {
+    fun a_findAll() {
         val productsFromService = productService.findAll()
 
         val products: List<Product> = mockMvc
@@ -52,7 +55,7 @@ class ProductApiApplicationTests {
     }
 
     @Test
-    fun findById() {
+    fun b_findById() {
         val productsFromService = productService.findAll()
         assert(productsFromService.isNotEmpty()) { "Should not be empty" }
 
@@ -64,25 +67,25 @@ class ProductApiApplicationTests {
     }
 
     @Test
-    fun findByIdEmpty() {
+    fun c_findByIdEmpty() {
         mockMvc.perform(MockMvcRequestBuilders.get("$productEndPoint/${UUID.randomUUID()}"))
-            .andExpect(status().isOk)
+            .andExpect(status().isNoContent)
             .andExpect(jsonPath("$").doesNotExist())
     }
 
     @Test
-    fun saveSuccessfully() {
+    fun d_saveSuccessfully() {
         val product = Product(name = "PineApple", price = 50.0)
 
         val result: Boolean = mockMvc.perform(
             MockMvcRequestBuilders.post(productEndPoint).body(product, mapper)
-        ).andExpect(status().isOk).bodyTo(mapper)
+        ).andExpect(status().isCreated).bodyTo(mapper)
 
         assert(result)
     }
 
     @Test
-    fun saveFail() {
+    fun e_saveFail() {
         val productsFromService = productService.findAll()
         assert(productsFromService.isNotEmpty()) { "Should not be empty" }
 
@@ -90,13 +93,13 @@ class ProductApiApplicationTests {
 
         val result: Boolean = mockMvc.perform(
             MockMvcRequestBuilders.post(productEndPoint).body(product, mapper)
-        ).andExpect(status().isOk).bodyTo(mapper)
+        ).andExpect(status().isConflict).bodyTo(mapper)
 
         assert(!result) { "Should be false" }
     }
 
     @Test
-    fun updateSuccessfully() {
+    fun f_updateSuccessfully() {
         val productsFromService = productService.findAll()
         assert(productsFromService.isNotEmpty()) { "Should not be empty" }
 
@@ -111,18 +114,18 @@ class ProductApiApplicationTests {
     }
 
     @Test
-    fun updateFail() {
+    fun g_updateFail() {
         val product = Product(name = UUID.randomUUID().toString(), price = 123.123)
 
         val result: Boolean = mockMvc.perform(
             MockMvcRequestBuilders.put(productEndPoint).body(product, mapper)
-        ).andExpect(status().isOk).bodyTo(mapper)
+        ).andExpect(status().isConflict).bodyTo(mapper)
 
         assert(!result) { "Should be false" }
     }
 
     @Test
-    fun deleteById() {
+    fun h_deleteById() {
         val productsFromService = productService.findAll()
         assert(productsFromService.isNotEmpty()) { "Should not be empty" }
 
@@ -136,10 +139,10 @@ class ProductApiApplicationTests {
     }
 
     @Test
-    fun deleteByIdFail() {
+    fun i_deleteByIdFail() {
         val result: Boolean = mockMvc.perform(
             MockMvcRequestBuilders.delete("$productEndPoint/${UUID.randomUUID()}")
-        ).andExpect(status().isOk).bodyTo(mapper)
+        ).andExpect(status().isNoContent).bodyTo(mapper)
 
         assert(!result) { "Should be false" }
     }
