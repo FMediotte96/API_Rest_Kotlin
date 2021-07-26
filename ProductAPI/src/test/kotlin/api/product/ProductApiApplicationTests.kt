@@ -85,6 +85,15 @@ class ProductApiApplicationTests {
     }
 
     @Test
+    fun d2_saveCheckRules() {
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(productEndPoint).body(Product("", -50.0), mapper)
+        ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.name").exists())
+            .andExpect(jsonPath("$.price").exists())
+    }
+
+    @Test
     fun e_saveFail() {
         val productsFromService = productService.findAll()
         assert(productsFromService.isNotEmpty()) { "Should not be empty" }
@@ -146,4 +155,5 @@ class ProductApiApplicationTests {
 
         assert(!result) { "Should be false" }
     }
+
 }
