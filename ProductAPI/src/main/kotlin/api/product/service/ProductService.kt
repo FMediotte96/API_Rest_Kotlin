@@ -1,6 +1,7 @@
 package api.product.service
 
 import api.product.domain.Product
+import api.product.utils.update
 import org.springframework.stereotype.Service
 
 @Service
@@ -15,7 +16,7 @@ class ProductService : BasicCrud<Product, String> {
 
     override fun save(t: Product): Boolean = this.products.add(t)
 
-    override fun update(t: Product): Boolean = this.products.remove(t) && this.products.add(t)
+    override fun update(t: Product): Boolean = this.products.update(t)
 
     override fun deleteById(id: String): Boolean = this.products.remove(findById(id))
 }
