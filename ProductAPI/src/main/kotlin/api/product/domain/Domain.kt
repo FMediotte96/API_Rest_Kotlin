@@ -36,7 +36,7 @@ data class Product(
 data class Provider(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int = 0,
+    var id: Int = 0,
     @get:Size(min = 3, max = 20)
     val name: String,
     @get:Email

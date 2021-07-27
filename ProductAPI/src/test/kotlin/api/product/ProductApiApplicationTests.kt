@@ -1,8 +1,8 @@
 package api.product
 
 import api.product.domain.Product
-import api.product.domain.Provider
 import api.product.service.ProductService
+import api.product.service.ProviderService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
@@ -25,7 +25,6 @@ import java.util.*
 //@AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class ProductApiApplicationTests {
-    //TODO update providers
 
     @Autowired
     private lateinit var webApplicationContext: WebApplicationContext
@@ -42,7 +41,14 @@ class ProductApiApplicationTests {
     @Autowired
     private lateinit var productService: ProductService
 
+    @Autowired
+    private lateinit var providerService: ProviderService
+
     private val productEndPoint = "/api/v1/product"
+
+    private val defaultProvider by lazy {
+        providerService.findAll().first()
+    }
 
     @Test
     fun a_findAll() {
@@ -79,7 +85,7 @@ class ProductApiApplicationTests {
     fun d_saveSuccessfully() {
         val product = Product(
             name = "PineApple", price = 50.0,
-            provider = Provider(name = "Facundo", email = "facumediotte@gmail.com")
+            provider = defaultProvider
         )
 
         val productFromApi: Product = mockMvc.perform(
@@ -97,7 +103,7 @@ class ProductApiApplicationTests {
                     Product(
                         "",
                         -50.0,
-                        provider = Provider(name = "Facundo", email = "facumediotte@gmail.com")
+                        provider = defaultProvider
                     ),
                     mapper
                 )
@@ -120,6 +126,21 @@ class ProductApiApplicationTests {
     }
 
     @Test
+    fun e2_saveEntityNotFound() {
+        val productsFromService = productService.findAll()
+        assert(productsFromService.isNotEmpty()) { "Should not be empty" }
+
+        val product = productsFromService.first().copy(name = "EntityTest").apply {
+            this.provider.id = 50
+        }
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(productEndPoint).body(product, mapper)
+        ).andExpect(status().isConflict)
+            .andExpect(jsonPath("$.title", Matchers.`is`("JpaObjectRetrievalFailureException")))
+    }
+
+    @Test
     fun f_updateSuccessfully() {
         val productsFromService = productService.findAll()
         assert(productsFromService.isNotEmpty()) { "Should not be empty" }
@@ -137,7 +158,7 @@ class ProductApiApplicationTests {
     @Test
     fun g_updateEntityNotFound() {
         val product = Product(name = UUID.randomUUID().toString(), price = 123.123,
-            provider = Provider(name = "Facundo", email = "facumediotte@gmail.com")
+            provider = defaultProvider
         )
 
         mockMvc.perform(

@@ -14,18 +14,21 @@ class OnBoot(
     private val providerService: ProviderService
 ) : ApplicationRunner {
 
-    val defaultProvider = providerService.save(
-        Provider(name = "Facundo", email = "facumediotte@gmail.com")
-    )
-
     override fun run(args: ApplicationArguments?) {
+        val defaultProvider = Provider(id = 1, name = "Facundo", email = "facumediotte@gmail.com")
+
+        if (!providerService.providerDAO.existsById(defaultProvider.id)) {
+            this.providerService.save(defaultProvider)
+        }
+
         listOf(
             Product("Apple", 22.2, 5, defaultProvider),
             Product(stock = 1, price = 33.8, name = "Orange", provider = defaultProvider)
         ).forEach {
-            println("Saving -> ${it.name}")
-            productService.save(it)
+            if (!productService.productDAO.existsById(it.name)) {
+                println("Saving -> ${it.name}")
+                productService.save(it)
+            }
         }
     }
-
 }
