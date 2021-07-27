@@ -1,7 +1,9 @@
 package api.product.controller
 
 import api.product.domain.Product
+import api.product.domain.Provider
 import api.product.service.ProductService
+import api.product.service.ProviderService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -18,3 +20,9 @@ class ProductController(
         throw FileNotFoundException("just test")
     }
 }
+
+@RestController
+@RequestMapping("api/v1/provider")
+class ProviderController(
+    providerService: ProviderService
+) : BasicController<Provider, Int>(providerService)

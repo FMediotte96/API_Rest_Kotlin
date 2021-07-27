@@ -1,6 +1,7 @@
 package api.product
 
 import api.product.domain.Product
+import api.product.domain.Provider
 import api.product.service.ProductService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.MatcherAssert.assertThat
@@ -24,6 +25,7 @@ import java.util.*
 //@AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class ProductApiApplicationTests {
+    //TODO update providers
 
     @Autowired
     private lateinit var webApplicationContext: WebApplicationContext
@@ -75,7 +77,10 @@ class ProductApiApplicationTests {
 
     @Test
     fun d_saveSuccessfully() {
-        val product = Product(name = "PineApple", price = 50.0)
+        val product = Product(
+            name = "PineApple", price = 50.0,
+            provider = Provider(name = "Facundo", email = "facumediotte@gmail.com")
+        )
 
         val productFromApi: Product = mockMvc.perform(
             MockMvcRequestBuilders.post(productEndPoint).body(product, mapper)
@@ -87,7 +92,15 @@ class ProductApiApplicationTests {
     @Test
     fun d2_saveCheckRules() {
         mockMvc.perform(
-            MockMvcRequestBuilders.post(productEndPoint).body(Product("", -50.0), mapper)
+            MockMvcRequestBuilders.post(productEndPoint)
+                .body(
+                    Product(
+                        "",
+                        -50.0,
+                        provider = Provider(name = "Facundo", email = "facumediotte@gmail.com")
+                    ),
+                    mapper
+                )
         ).andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.name").exists())
             .andExpect(jsonPath("$.price").exists())
@@ -123,7 +136,9 @@ class ProductApiApplicationTests {
 
     @Test
     fun g_updateEntityNotFound() {
-        val product = Product(name = UUID.randomUUID().toString(), price = 123.123)
+        val product = Product(name = UUID.randomUUID().toString(), price = 123.123,
+            provider = Provider(name = "Facundo", email = "facumediotte@gmail.com")
+        )
 
         mockMvc.perform(
             MockMvcRequestBuilders.put(productEndPoint).body(product, mapper)
